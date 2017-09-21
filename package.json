@@ -1,6 +1,6 @@
 {
   "name": "electron-react-boilerplate",
-  "productName": "ElectronReact",
+  "productName": "Printum Agent",
   "version": "0.12.0",
   "description": "Electron application boilerplate based on React, React Router, Webpack, React Hot Loader for rapid application development",
   "scripts": {
@@ -186,13 +186,13 @@
     "webpack-merge": "^4.1.0"
   },
   "dependencies": {
-    "@achingbrain/ssdp": "^2.1.2",
     "devtron": "^1.4.0",
     "electron-debug": "^1.2.0",
     "font-awesome": "^4.7.0",
     "history": "^4.6.3",
     "immutable": "^3.8.1",
     "ip": "^1.1.5",
+    "node-ssdp": "^3.2.1",
     "ping": "^0.2.2",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",

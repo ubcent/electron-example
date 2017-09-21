@@ -11,7 +11,7 @@ export default handleActions({
     if(state.has(ip) && state.getIn([ip, 'type']) == 'printer') {
       return state;
     } else {
-      return state.set(ip, fromJS({ type, source }));
+      return state.set(ip, fromJS({ type, source, ip }));
     }
   }
 }, initialState);

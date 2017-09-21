@@ -1,12 +1,12 @@
 .container {
   position: absolute;
-  top: 30%;
+  top: 20px;
   left: 10px;
   text-align: center;
 }
 
 .container h2 {
-  font-size: 5rem;
+  font-size: 20px;
 }
 
 .container a {

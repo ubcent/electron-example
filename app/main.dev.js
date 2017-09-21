@@ -11,14 +11,14 @@
  * @flow
  */
 import { app, BrowserWindow, ipcMain } from 'electron';
-import ssdp from '@achingbrain/ssdp';
+import { Client } from 'node-ssdp';
 import ip from 'ip';
 import ping from 'ping';
 
 import MenuBuilder from './menu';
 
 let mainWindow = null;
-const bus = ssdp();
+const bus = new Client();
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -70,11 +70,6 @@ app.on('ready', async () => {
     height: 728
   });
 
-  bus.discover();
-  bus.on('discover:*', service => {
-    console.log(service)
-  });
-
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
   // @TODO: Use 'ready-to-show' event
@@ -90,6 +85,17 @@ app.on('ready', async () => {
     const myIp = ip.address();
 
     ipcMain.on('ping', (event, ...args) => {
+      bus.on('response', (headers, code, rinfo) => {
+        event.sender.send('addHost', {
+          ip: rinfo.address,
+          source: 'ssdp',
+          type: 'printer'
+        });
+      });
+
+      setImmediate(() => {
+        bus.search('urn:schemas-upnp-org:device:Printer:1');
+      });
       console.log('Ping', ...args);
       event.sender.send('setEnvProp', {
         value: ip.address(),
@@ -99,20 +105,18 @@ app.on('ready', async () => {
       const ipPart = myIp.split('.').slice(0, 3).join('.');
       let hosts = [];
       for (let i = 1; i < 255; i++) {
-        if(ipPart + '.' + i != myIp) {
+        if (ipPart + '.' + i !== myIp) {
           hosts.push(ipPart + '.' + i);
         }
       }
       hosts.forEach(host => {
         ping.sys.probe(host, isAlive => {
-          if(isAlive) {
+          if (isAlive) {
             event.sender.send('addHost', {
               ip: host,
               source: 'ping',
               type: 'unknown'
             });
-          } else {
-            console.log('Not Alive', host);
           }
         });
       });
