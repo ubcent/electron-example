@@ -14,6 +14,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import { Client } from 'node-ssdp';
 import ip from 'ip';
 import ping from 'ping';
+import os from 'os';
 
 import MenuBuilder from './menu';
 
@@ -82,6 +83,7 @@ app.on('ready', async () => {
     mainWindow.focus();
 
     console.log('My IP', ip.address());
+    console.log(os.networkInterfaces());
     const myIp = ip.address();
 
     ipcMain.on('ping', (event, ...args) => {
