@@ -13,8 +13,11 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { Client } from 'node-ssdp';
 import ip from 'ip';
-import ping from 'ping';
 import os from 'os';
+import fs from 'fs';
+
+import SubnetDiscoverer from 'subnet-discover';
+import snmp from 'net-snmp';
 
 import MenuBuilder from './menu';
 
@@ -83,8 +86,33 @@ app.on('ready', async () => {
     mainWindow.focus();
 
     console.log('My IP', ip.address());
-    console.log(os.networkInterfaces());
     const myIp = ip.address();
+
+    ipcMain.on('fetchTree', (event, ...args) => {
+      const [ip] = args;
+      console.log('tree', ip);
+      const session = snmp.createSession(ip, 'public');
+
+      let vBinds = [];
+
+      session.walk('1.3.6.1', 20, varbinds => {
+        vBinds = vBinds.concat(varbinds);
+      }, error => {
+        if (error) {
+          console.log(error);
+        }
+        fs.writeFile(`${ip}.txt`, JSON.stringify(vBinds.map(item => {
+          if(item.value) item.value = item.value.toString();
+          return item;
+        })), function (err) {
+          if (err) {
+            return console.log(err);
+          }
+
+          console.log("The file was saved!", ip);
+        });
+      });
+    });
 
     ipcMain.on('ping', (event, ...args) => {
       bus.on('response', (headers, code, rinfo) => {
@@ -104,24 +132,24 @@ app.on('ready', async () => {
         name: 'ip'
       });
 
-      const ipPart = myIp.split('.').slice(0, 3).join('.');
-      let hosts = [];
-      for (let i = 1; i < 255; i++) {
-        if (ipPart + '.' + i !== myIp) {
-          hosts.push(ipPart + '.' + i);
-        }
-      }
-      hosts.forEach(host => {
-        ping.sys.probe(host, isAlive => {
-          if (isAlive) {
-            event.sender.send('addHost', {
-              ip: host,
-              source: 'ping',
-              type: 'unknown'
-            });
-          }
+      const subnetDiscoverer = new SubnetDiscoverer();
+      subnetDiscoverer.on('host:alive', ip => {
+        event.sender.send('addHost', {
+          ip,
+          source: 'ping',
+          type: 'unknown'
         });
       });
+      subnetDiscoverer.on('host:printer', (ip, deviceName) => {
+        console.log(ip, deviceName);
+        event.sender.send('updateHost', {
+          ip,
+          source: 'snmp',
+          type: 'printer',
+          model: deviceName
+        });
+      });
+      subnetDiscoverer.discover();
     });
   });
 

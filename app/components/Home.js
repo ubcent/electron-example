@@ -11,10 +11,15 @@ export default class Home extends Component {
         <div className={styles.container} data-tid="container">
           <h2>My IP {env.get('ip')}</h2>
           <ul>
-            {hosts.map(host => <li>{host.ip} ({host.type}/{host.source})</li>)}
+            {hosts.map(host => <li onClick={this.clickHandler(host.ip)}>{host.model} {host.ip} ({host.type}/{host.source})</li>)}
           </ul>
         </div>
       </div>
     );
   }
+
+  clickHandler = (ip) => (event) => {
+    const {fetchTree} = this.props;
+    fetchTree(ip);
+  };
 }

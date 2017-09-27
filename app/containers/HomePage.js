@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import Home from '../components/Home';
+import { send } from 'redux-electron-ipc';
 
 function mapStateToProps(state) {
   return {
@@ -8,4 +9,10 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps)(Home);
+function mapDispatchToProps(dispatch) {
+  return {
+    fetchTree: (ip) => dispatch(send('fetchTree', ip))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);

@@ -19,6 +19,7 @@ const configureStore = (initialState) => {
 
   const ipc = createIpc({
     'addHost': hostActions.addHost,
+    'updateHost': hostActions.updateHost,
     'setEnvProp': envActions.setEnvProp
   });
   middleware.push(ipc);

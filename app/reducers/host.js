@@ -13,5 +13,9 @@ export default handleActions({
     } else {
       return state.set(ip, fromJS({ type, source, ip }));
     }
+  },
+  [actions.updateHost]: (state, action) => {
+    const { ip, source, type, model } = action.payload;
+    return state.update(ip, host => fromJS({ ip, type, source, model }));
   }
 }, initialState);
